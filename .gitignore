@@ -1,0 +1,25 @@
+# Release 文件夹
+Release/
+
+# 调试日志文件
+*.log
+
+# Windows 可执行文件
+*.exe
+
+# 临时文件
+*.tmp
+*.temp
+
+# IDE配置文件
+.vscode/
+.idea/
+
+# 系统文件
+Thumbs.db
+.DS_Store
+
+# Python缓存
+__pycache__/
+*.pyc
+*.pyo 
