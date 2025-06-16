@@ -10,7 +10,7 @@
 
 需要注意的是ahk的右键钩子与WGesture2(WGesture1未测试)冲突, 作者的做法是禁用WGesture2的右键相关功能, 只使用其移到屏幕上下边缘时的音量与亮度调整功能.
 
-同时本readme只在typora的最新版开启mathjax的physics支持时可以完全渲染, vscode(cursor)中用MPE插件的mathjax或katex都有报错. 没有typora的话可以查看[README.pdf](./README.pdf)或[README.html](./README.html)文件.
+同时原版[readme](./readme_align.md)只在typora的最新版开启mathjax的physics支持时可以完全渲染, vscode(cursor)中用MPE插件的mathjax或katex都有报错. 没有typora的话可以查看[README.pdf](./README.pdf)或[README.html](./README.html)文件.
 
 ## 1. 基本功能
 
@@ -222,14 +222,14 @@
   - 保存位置: 桌面的"速记\默认"文件夹
 
 - **指定目标保存:**
-  - 在笔记最后一行使用 "==目标==" 格式指定保存位置
+  - 在笔记最后一行使用 "\==目标==" 格式指定保存位置
   - 支持的预设目标:
     - 论文: 保存到 "速记\论文灵感.txt"
     - 日记: 保存到 "速记\日记.txt"
     - 工作: 保存到 "速记\工作.txt"
     - 想法: 保存到 "速记\想法.txt"
   - 也可以指定默认文件夹中已存在的文件名:
-    - 例如 "==我的项目==" 会查找并追加到 "速记\默认\我的项目.txt"
+    - 例如 "\==我的项目==" 会查找并追加到 "速记\默认\我的项目.txt"
     - 如果指定的文件不存在且不是预设目标, 则忽略该指定
 
 ### 6.3 快捷键
