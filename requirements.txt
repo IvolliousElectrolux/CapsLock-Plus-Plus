@@ -1,0 +1,3 @@
+# CapsLock++ 配置助手依赖
+PyQt5>=5.15.0
+pynput>=1.7.0 
