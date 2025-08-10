@@ -2,7 +2,7 @@
 #SingleInstance Force
 
 ; =====================================================================
-; CapsLock++ v1.01
+; CapsLock++ v1.1
 ; 增强版 CapsLock 功能脚本
 ; =====================================================================
 
@@ -4218,22 +4218,6 @@ ProcessExist(processName) {
     Send("")
 }
 
-[::
-    {
-        ; 标记为按下了其他键
-        global otherKeyPressed := true
-        
-        Send("")
-}
-    
-]::
-{
-    ; 标记为按下了其他键
-    global otherKeyPressed := true
-    
-    Send("")
-}
-
 \::
 {
     ; 标记为按下了其他键
@@ -4248,6 +4232,23 @@ ProcessExist(processName) {
     global otherKeyPressed := true
     
     Send("")
+}
+
+; 发送括号, 避免一直在caps与shift之间切换
+[:: 
+{
+    ; 标记为按下了其他键
+    global otherKeyPressed := true
+
+    SendText("{")
+}
+
+]::
+{
+    ; 标记为按下了其他键
+    global otherKeyPressed := true
+
+    SendText("}")
 }
 #HotIf
 
@@ -5709,6 +5710,26 @@ ClearCapsLockAhkWindows() {
 }
 
 ; 显示菜单
+; 检查菜单组是否为空的函数
+IsMenuGroupEmpty(groupIndex) {
+    global MenuGroups
+    
+    ; 检查组索引是否有效
+    if (groupIndex < 1 || groupIndex > MenuGroups.Length || !MenuGroups[groupIndex].HasOwnProp("name")) {
+        return true  ; 无效的组索引，认为是空的
+    }
+    
+    ; 获取当前组
+    currentGroup := MenuGroups[groupIndex]
+    
+    ; 检查是否有任何项目
+    if (!currentGroup.HasOwnProp("items") || currentGroup.items.Length = 0) {
+        return true  ; 没有项目，认为是空的
+    }
+    
+    return false  ; 有项目，不是空的
+}
+
 ShowMenu(groupIndex) {
     global currentMenuGui, currentMenuGroup
     
@@ -6167,8 +6188,14 @@ ExecuteMenuItem(groupIndex, itemIndex) {
     global otherKeyPressed := true
     global currentMenuGroup
     
-    ; 显示第9组菜单（无论当前是否已有菜单）
-    ShowMenu(9)
+    ; 检查第9组菜单是否为空
+    if (IsMenuGroupEmpty(9)) {
+        ; 菜单为空，发送左括号
+        SendText("(")
+    } else {
+        ; 菜单非空，显示第9组菜单
+        ShowMenu(9)
+    }
 }
 
 0::
@@ -6177,9 +6204,16 @@ ExecuteMenuItem(groupIndex, itemIndex) {
     global otherKeyPressed := true
     global currentMenuGroup
     
-    ; 显示第10组菜单（无论当前是否已有菜单）
-    ShowMenu(10)
+    ; 检查第10组菜单是否为空
+    if (IsMenuGroupEmpty(10)) {
+        ; 菜单为空，发送右括号
+        SendText(")")
+    } else {
+        ; 菜单非空，显示第10组菜单
+        ShowMenu(10)
+    }
 }
+#HotIf
 
 ; 添加单独的数字键处理（不带CapsLock）
 #HotIf WinActive("ahk_id " currentMenuGui)

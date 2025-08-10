@@ -1,5 +1,6 @@
 # Release 文件夹
 Release/
+Release.zip
 
 # 调试日志文件
 *.log
