@@ -2,6 +2,11 @@
 #SingleInstance Force
 
 ; =====================================================================
+; CapsLock++ v1.01
+; 增强版 CapsLock 功能脚本
+; =====================================================================
+
+; =====================================================================
 ; 初始化
 ; =====================================================================
 
@@ -8794,153 +8799,178 @@ ClearAllToolTips() {
 
 ; 检查当前活动窗口是否被裁剪的函数
 IsActiveWindowClipped() {
-    ; 获取当前活动窗口的句柄
-    activeHwnd := WinGetID("A")
-    
-    ; 检查窗口是否在裁剪窗口列表中且确实有区域信息
-    if (windowStates.Has(activeHwnd) && windowStates[activeHwnd].HasOwnProp("region")) {
-        ; 确认region不为空并且有有效的尺寸
-        region := windowStates[activeHwnd].region
-        if (IsObject(region) && region.HasOwnProp("w") && region.HasOwnProp("h") && 
-            region.w > 0 && region.h > 0) {
-            return true
+    try {
+        ; 获取当前活动窗口的句柄
+        activeHwnd := WinGetID("A")
+        
+        ; 检查窗口是否在裁剪窗口列表中且确实有区域信息
+        if (windowStates.Has(activeHwnd) && windowStates[activeHwnd].HasOwnProp("region")) {
+            ; 确认region不为空并且有有效的尺寸
+            region := windowStates[activeHwnd].region
+            if (IsObject(region) && region.HasOwnProp("w") && region.HasOwnProp("h") && 
+                region.w > 0 && region.h > 0) {
+                return true
+            }
         }
+        
+        return false
+    } catch {
+        ; 如果获取窗口信息失败（比如没有激活窗口），返回 false
+        return false
     }
-    
-    return false
 }
 
 ; 显示当前裁剪窗口信息的函数
 ShowClipInfo() {
-    activeHwnd := WinGetID("A")
-    
-    if (windowStates.Has(activeHwnd) && windowStates[activeHwnd].HasOwnProp("region")) {
-        region := windowStates[activeHwnd].region
-        winTitle := WinGetTitle(activeHwnd)
+    try {
+        activeHwnd := WinGetID("A")
         
-        infoText := "窗口: " winTitle "`n"
-        infoText .= "裁剪区域: x=" region.x ", y=" region.y ", w=" region.w ", h=" region.h
-        
-        ShowToolTip(infoText, 3000)
+        if (windowStates.Has(activeHwnd) && windowStates[activeHwnd].HasOwnProp("region")) {
+            region := windowStates[activeHwnd].region
+            winTitle := WinGetTitle(activeHwnd)
+            
+            infoText := "窗口: " winTitle "`n"
+            infoText .= "裁剪区域: x=" region.x ", y=" region.y ", w=" region.w ", h=" region.h
+            
+            ShowToolTip(infoText, 3000)
+        }
+    } catch {
+        ; 如果获取窗口信息失败，静默忽略
+        return
     }
 }
 
 ; 裁切区域移动函数 - 添加边界限制
 MoveClipRegion(direction, step := 50) {
-    activeHwnd := WinGetID("A")
-    
-    ; 确保窗口是已裁剪的
-    if (!windowStates.Has(activeHwnd) || !windowStates[activeHwnd].HasOwnProp("region")) {
+    try {
+        activeHwnd := WinGetID("A")
+        
+        ; 确保窗口是已裁剪的
+        if (!windowStates.Has(activeHwnd) || !windowStates[activeHwnd].HasOwnProp("region")) {
+            return
+        }
+        
+        ; 获取当前裁切区域
+        region := windowStates[activeHwnd].region
+        x := region.x
+        y := region.y
+        w := region.w
+        h := region.h
+        
+        ; 获取窗口尺寸用于边界检查
+        WinGetPos(, , &winWidth, &winHeight, "ahk_id " activeHwnd)
+        
+        ; 根据方向移动裁切区域，同时检查边界
+        switch direction {
+            case "up":
+                y := Max(0, y - step)
+            case "down":
+                ; 确保裁切区域的底部不超出窗口
+                y := Min(y + step, winHeight - h)
+            case "left":
+                x := Max(0, x - step)
+            case "right":
+                ; 确保裁切区域的右侧不超出窗口
+                x := Min(x + step, winWidth - w)
+        }
+        
+        ; 应用新的裁切区域
+        ApplyClipToWindow(activeHwnd, x, y, w, h)
+        
+        /*
+        ; 显示更新后的裁切区域信息
+        infoText := "窗口: " WinGetTitle(activeHwnd) "`n"
+        infoText .= "裁剪区域: x=" x ", y=" y ", w=" w ", h=" h "`n"
+        infoText .= "窗口尺寸: " winWidth "x" winHeight
+        ShowToolTip(infoText, 1000)
+        */
+    } catch {
+        ; 如果获取窗口信息失败，静默忽略
         return
     }
-    
-    ; 获取当前裁切区域
-    region := windowStates[activeHwnd].region
-    x := region.x
-    y := region.y
-    w := region.w
-    h := region.h
-    
-    ; 获取窗口尺寸用于边界检查
-    WinGetPos(, , &winWidth, &winHeight, "ahk_id " activeHwnd)
-    
-    ; 根据方向移动裁切区域，同时检查边界
-    switch direction {
-        case "up":
-            y := Max(0, y - step)
-        case "down":
-            ; 确保裁切区域的底部不超出窗口
-            y := Min(y + step, winHeight - h)
-        case "left":
-            x := Max(0, x - step)
-        case "right":
-            ; 确保裁切区域的右侧不超出窗口
-            x := Min(x + step, winWidth - w)
-    }
-    
-    ; 应用新的裁切区域
-    ApplyClipToWindow(activeHwnd, x, y, w, h)
-    
-    /*
-    ; 显示更新后的裁切区域信息
-    infoText := "窗口: " WinGetTitle(activeHwnd) "`n"
-    infoText .= "裁剪区域: x=" x ", y=" y ", w=" w ", h=" h "`n"
-    infoText .= "窗口尺寸: " winWidth "x" winHeight
-    ShowToolTip(infoText, 1000)
-    */
 }
 
 ; 调整裁剪区域大小
 ResizeClipRegion(action, step := 20) {
-    activeHwnd := WinGetID("A")
-    
-    ; 确保窗口是已裁剪的
-    if (!windowStates.Has(activeHwnd) || !windowStates[activeHwnd].HasOwnProp("region")) {
+    try {
+        activeHwnd := WinGetID("A")
+        
+        ; 确保窗口是已裁剪的
+        if (!windowStates.Has(activeHwnd) || !windowStates[activeHwnd].HasOwnProp("region")) {
+            return
+        }
+        
+        ; 获取当前裁切区域
+        region := windowStates[activeHwnd].region
+        x := region.x
+        y := region.y
+        w := region.w
+        h := region.h
+        
+        ; 获取窗口尺寸用于边界检查
+        WinGetPos(, , &winWidth, &winHeight, "ahk_id " activeHwnd)
+        
+        ; 根据操作调整裁剪区域大小
+        switch action {
+            case "widthIncrease":
+                ; 确保不超出窗口右边界
+                w := Min(w + step, winWidth - x)
+            case "widthDecrease":
+                ; 确保宽度不小于最小值
+                w := Max(w - step, 20)
+            case "heightIncrease":
+                ; 确保不超出窗口底部边界
+                h := Min(h + step, winHeight - y)
+            case "heightDecrease":
+                ; 确保高度不小于最小值
+                h := Max(h - step, 20)
+        }
+        
+        ; 应用新的裁切区域
+        ApplyClipToWindow(activeHwnd, x, y, w, h)
+        
+        ; 显示调整后的区域信息
+        infoText := "裁剪区域: " w "×" h
+        ShowTooltip(infoText, 1000)
+    } catch {
+        ; 如果获取窗口信息失败，静默忽略
         return
     }
-    
-    ; 获取当前裁切区域
-    region := windowStates[activeHwnd].region
-    x := region.x
-    y := region.y
-    w := region.w
-    h := region.h
-    
-    ; 获取窗口尺寸用于边界检查
-    WinGetPos(, , &winWidth, &winHeight, "ahk_id " activeHwnd)
-    
-    ; 根据操作调整裁剪区域大小
-    switch action {
-        case "widthIncrease":
-            ; 确保不超出窗口右边界
-            w := Min(w + step, winWidth - x)
-        case "widthDecrease":
-            ; 确保宽度不小于最小值
-            w := Max(w - step, 20)
-        case "heightIncrease":
-            ; 确保不超出窗口底部边界
-            h := Min(h + step, winHeight - y)
-        case "heightDecrease":
-            ; 确保高度不小于最小值
-            h := Max(h - step, 20)
-    }
-    
-    ; 应用新的裁切区域
-    ApplyClipToWindow(activeHwnd, x, y, w, h)
-    
-    ; 显示调整后的区域信息
-    infoText := "裁剪区域: " w "×" h
-    ShowTooltip(infoText, 1000)
 }
 
 ; 开始拖动裁切窗口 - 改进版
 StartDragClippedWindow() {
     global isDragging, dragHwnd, startX, startY, offsetX, offsetY
     
-    ; 获取当前活动窗口
-    activeHwnd := WinGetID("A")
-    
-    ; 确保是被裁切的窗口
-    if (!IsActiveWindowClipped())
+    try {
+        ; 获取当前活动窗口
+        activeHwnd := WinGetID("A")
+        
+        ; 确保是被裁切的窗口
+        if (!IsActiveWindowClipped())
+            return
+        
+        ; 获取鼠标初始位置
+        CoordMode("Mouse", "Screen")
+        MouseGetPos(&startX, &startY)
+        
+        ; 获取窗口初始位置
+        WinGetPos(&winX, &winY, , , "ahk_id " activeHwnd)
+        
+        ; 计算鼠标相对于窗口左上角的偏移量
+        offsetX := startX - winX
+        offsetY := startY - winY
+        
+        ; 设置状态
+        isDragging := true
+        dragHwnd := activeHwnd
+        
+        ; 使用SetTimer来实现窗口拖动
+        SetTimer(DragWindowTimer, 6)
+    } catch {
+        ; 如果获取窗口信息失败（比如没有激活窗口），静默忽略
         return
-    
-    ; 获取鼠标初始位置
-    CoordMode("Mouse", "Screen")
-    MouseGetPos(&startX, &startY)
-    
-    ; 获取窗口初始位置
-    WinGetPos(&winX, &winY, , , "ahk_id " activeHwnd)
-    
-    ; 计算鼠标相对于窗口左上角的偏移量
-    offsetX := startX - winX
-    offsetY := startY - winY
-    
-    ; 设置状态
-    isDragging := true
-    dragHwnd := activeHwnd
-    
-    ; 使用SetTimer来实现窗口拖动
-    SetTimer(DragWindowTimer, 6)
+    }
 }
 
 ; 停止拖动裁切窗口
