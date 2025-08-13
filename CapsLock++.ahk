@@ -4226,12 +4226,13 @@ ProcessExist(processName) {
     Send("")
 }
 
+; 发送双引号, 避免一直在caps与shift之间切换
 '::
 {
     ; 标记为按下了其他键
     global otherKeyPressed := true
     
-    Send("")
+    SendText("`"")
 }
 
 ; 发送括号, 避免一直在caps与shift之间切换
