@@ -2,7 +2,7 @@
 #SingleInstance Force
 
 ; =====================================================================
-; CapsLock++ v1.1
+; CapsLock++ v1.1.1
 ; 增强版 CapsLock 功能脚本
 ; =====================================================================
 
@@ -6531,6 +6531,10 @@ ActivateOrRun(processName, runCommand) {
     
     ; 如果没有找到窗口，运行指定的命令
     if (!windowFound) {
+        if (runCommand = "wt`"") {
+            Run("wt -d" EnvGet("USERPROFILE"))
+            return
+        }
         try {
             Run('"' runCommand '"') 
         } catch Error as e {
